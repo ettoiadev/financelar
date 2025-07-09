@@ -1,3 +1,5 @@
+'use client'
+
 import { Suspense } from "react"
 import { QuickActions } from "@/components/quick-actions"
 import { CategoryPieChart } from "@/components/category-pie-chart"
@@ -7,125 +9,138 @@ import { getMonthlySummary, getUpcomingTransactions, getCreditCards } from "@/li
 import { formatCurrency } from "@/lib/utils/currency"
 
 async function DashboardMetrics() {
-  const currentDate = new Date()
-  const currentYear = currentDate.getFullYear()
-  const currentMonth = currentDate.getMonth() + 1
+  try {
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = currentDate.getMonth() + 1
 
-  const [summary, creditCards] = await Promise.all([getMonthlySummary(currentYear, currentMonth), getCreditCards()])
+    const [summary, creditCards] = await Promise.all([
+      getMonthlySummary(currentYear, currentMonth) || { total_amount: 0, paid_count: 0, overdue_count: 0 },
+      getCreditCards()
+    ])
 
-  const activeCreditCards = creditCards.filter((card) => card.is_active).length
+    const activeCreditCards = creditCards.filter((card) => card.is_active).length
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {/* Total Mensal */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Mensal</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary.total_amount)}</p>
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Mensal */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Total Mensal</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary?.total_amount || 0)}</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <TrendingUp className="w-6 h-6 text-white" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Cartões Ativos */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Cartões Ativos</p>
-              <p className="text-2xl font-bold text-gray-900">{activeCreditCards}</p>
+        {/* Cartões Ativos */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Cartões Ativos</p>
+                <p className="text-2xl font-bold text-gray-900">{activeCreditCards}</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <CreditCard className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <CreditCard className="w-6 h-6 text-white" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Contas Pagas */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Contas Pagas</p>
-              <p className="text-2xl font-bold text-gray-900">{summary.paid_count}</p>
+        {/* Contas Pagas */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Contas Pagas</p>
+                <p className="text-2xl font-bold text-gray-900">{summary?.paid_count || 0}</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <CheckCircle className="w-6 h-6 text-white" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Em Atraso */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Em Atraso</p>
-              <p className="text-2xl font-bold text-gray-900">{summary.overdue_count}</p>
+        {/* Em Atraso */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Em Atraso</p>
+                <p className="text-2xl font-bold text-gray-900">{summary?.overdue_count || 0}</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <AlertCircle className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <AlertCircle className="w-6 h-6 text-white" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+          </CardContent>
+        </Card>
+      </div>
+    )
+  } catch (error) {
+    console.error('Error in DashboardMetrics:', error)
+    return null
+  }
 }
 
 async function UpcomingDues() {
-  const upcomingTransactions = await getUpcomingTransactions(7)
+  try {
+    const upcomingTransactions = await getUpcomingTransactions(7)
 
-  return (
-    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-          <Calendar className="w-5 h-5 text-blue-600" />
-          Próximos Vencimentos
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {upcomingTransactions.length === 0 ? (
-          <div className="text-center py-8">
-            <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">Nenhum vencimento próximo</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {upcomingTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: transaction.category_color }} />
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">{transaction.title}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(transaction.due_date).toLocaleDateString("pt-BR")}
-                    </p>
+    return (
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            Próximos Vencimentos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {upcomingTransactions.length === 0 ? (
+            <div className="text-center py-8">
+              <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">Nenhum vencimento próximo</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {upcomingTransactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: transaction.category_color }} />
+                    <div>
+                      <p className="font-medium text-gray-900 text-sm">{transaction.title}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(transaction.due_date).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900 text-sm">{formatCurrency(transaction.amount)}</p>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      Pendente
+                    </span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900 text-sm">{formatCurrency(transaction.amount)}</p>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    Pendente
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  } catch (error) {
+    console.error('Error in UpcomingDues:', error)
+    return null
+  }
 }
 
 export default function Dashboard() {
