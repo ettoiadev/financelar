@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Receipt, CreditCard, Calendar as CalendarIcon } from "lucide-react"
@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { getCategories, getCreditCards, createRecurringTransaction } from "@/lib/database";
 import type { Category, CreditCard as CreditCardType } from "@/lib/database";
+import { createClient } from '@/lib/supabase/client'
 
 export default function NewTransactionPage() {
   const [formData, setFormData] = useState({
@@ -37,20 +38,40 @@ export default function NewTransactionPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [creditCards, setCreditCards] = useState<CreditCardType[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
     const router = useRouter();
+    const supabase = createClient();
 
-    useState(() => {
+    useEffect(() => {
         const fetchData = async () => {
-            const [categoriesData, creditCardsData] = await Promise.all([
-                getCategories(),
-                getCreditCards()
-            ]);
-            setCategories(categoriesData);
-            setCreditCards(creditCardsData);
+            try {
+                setLoading(true);
+                setError(null);
+                
+                // Check if user is authenticated
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.user?.id) {
+                    setError('Usuário não autenticado');
+                    return;
+                }
+
+                const [categoriesData, creditCardsData] = await Promise.all([
+                    getCategories(),
+                    getCreditCards()
+                ]);
+                setCategories(categoriesData || []);
+                setCreditCards(creditCardsData || []);
+            } catch (err) {
+                console.error('Error loading data:', err);
+                setError('Erro ao carregar dados');
+            } finally {
+                setLoading(false);
+            }
         };
         fetchData();
-    });
+    }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -118,6 +139,61 @@ export default function NewTransactionPage() {
     };
 
     const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
+
+    if (loading) {
+        return (
+            <div className="container mx-auto px-6 py-8">
+                <div className="flex items-center space-x-4 mb-8">
+                    <Link href="/transactions">
+                        <Button variant="outline" size="sm">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Voltar
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Nova Transação Recorrente</h1>
+                        <p className="text-gray-600">Carregando dados...</p>
+                    </div>
+                </div>
+                <div className="max-w-4xl">
+                    <Card>
+                        <CardContent className="p-6 text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-3"></div>
+                            <p className="text-gray-500 text-sm">Carregando categorias e cartões...</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container mx-auto px-6 py-8">
+                <div className="flex items-center space-x-4 mb-8">
+                    <Link href="/transactions">
+                        <Button variant="outline" size="sm">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Voltar
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Nova Transação Recorrente</h1>
+                        <p className="text-gray-600">Erro ao carregar dados</p>
+                    </div>
+                </div>
+                <div className="max-w-4xl">
+                    <Card>
+                        <CardContent className="p-6 text-center">
+                            <Receipt className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                            <p className="text-gray-500 text-sm">{error}</p>
+                            <p className="text-xs text-gray-400 mt-1">Tente fazer login novamente</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        );
+    }
 
   return (
     <div className="container mx-auto px-6 py-8">
