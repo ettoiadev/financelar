@@ -22,17 +22,17 @@ import { getCategories, getCreditCards, createRecurringTransaction } from "@/lib
 import type { Category, CreditCard as CreditCardType } from "@/lib/database";
 
 export default function NewTransactionPage() {
-    const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        amount: 0,
-        categoryId: "",
-        paymentMethod: "",
-        creditCardId: "",
-        recurrenceType: "monthly",
-        dueDay: "",
-        startDate: undefined as Date | undefined,
-        endDate: undefined as Date | undefined
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    amount: 0,
+    categoryId: "",
+    paymentMethod: "",
+    creditCardId: "",
+    recurrenceType: "monthly",
+    dueDay: "",
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -52,31 +52,31 @@ export default function NewTransactionPage() {
         fetchData();
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        try {
+    try {
             // Validations
             if (!formData.title.trim() || formData.amount <= 0 || !formData.categoryId || !formData.paymentMethod || !formData.dueDay || !formData.startDate) {
-                toast({
+        toast({
                     title: "Campos obrigatórios",
                     description: "Por favor, preencha todos os campos obrigatórios.",
-                    variant: "destructive",
+          variant: "destructive",
                 });
                 setIsSubmitting(false);
                 return;
-            }
+      }
 
-            if (formData.paymentMethod === "credit_card" && !formData.creditCardId) {
-                toast({
+      if (formData.paymentMethod === "credit_card" && !formData.creditCardId) {
+        toast({
                     title: "Cartão de crédito obrigatório",
-                    description: "Por favor, selecione um cartão de crédito.",
-                    variant: "destructive",
+          description: "Por favor, selecione um cartão de crédito.",
+          variant: "destructive",
                 });
                 setIsSubmitting(false);
                 return;
-            }
+      }
 
             const newTransaction = await createRecurringTransaction({
                 title: formData.title,
@@ -94,131 +94,131 @@ export default function NewTransactionPage() {
             });
 
             if (newTransaction) {
-                 toast({
-                    title: "Transação criada com sucesso!",
+      toast({
+        title: "Transação criada com sucesso!",
                     description: `A transação "${formData.title}" foi adicionada.`,
                 });
-
-                setTimeout(() => {
+      
+      setTimeout(() => {
                     router.push("/transactions");
                 }, 1000);
             } else {
                  throw new Error("Failed to create transaction");
             }
-
-        } catch (error) {
-            toast({
-                title: "Erro ao criar transação",
-                description: "Ocorreu um erro inesperado. Tente novamente.",
-                variant: "destructive",
+      
+    } catch (error) {
+      toast({
+        title: "Erro ao criar transação",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+        variant: "destructive",
             });
-        } finally {
+    } finally {
             setIsSubmitting(false);
-        }
+    }
     };
 
     const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
 
-    return (
-        <div className="container mx-auto px-6 py-8">
-            <div className="flex items-center space-x-4 mb-8">
-                <Link href="/transactions">
-                    <Button variant="outline" size="sm">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Voltar
-                    </Button>
-                </Link>
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Nova Transação Recorrente</h1>
-                    <p className="text-gray-600">Adicione uma nova conta recorrente</p>
-                </div>
-            </div>
+  return (
+    <div className="container mx-auto px-6 py-8">
+      <div className="flex items-center space-x-4 mb-8">
+        <Link href="/transactions">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Nova Transação Recorrente</h1>
+          <p className="text-gray-600">Adicione uma nova conta recorrente</p>
+        </div>
+      </div>
 
-            <div className="max-w-4xl">
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Informações básicas */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center space-x-2">
-                                <Receipt className="h-5 w-5" />
-                                <span>Informações Básicas</span>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="md:col-span-2">
-                                    <Label htmlFor="title">Título *</Label>
-                                    <Input
-                                        id="title"
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        placeholder="Ex: Netflix, Aluguel, Academia..."
-                                        required
-                                    />
-                                </div>
-                                <div className="md:col-span-2">
-                                    <Label htmlFor="description">Descrição</Label>
-                                    <Textarea
-                                        id="description"
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        placeholder="Descrição adicional (opcional)"
-                                        rows={3}
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="amount">Valor *</Label>
-                                    <CurrencyInput
-                                        id="amount"
-                                        value={formData.amount}
+      <div className="max-w-4xl">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Informações básicas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Receipt className="h-5 w-5" />
+                <span>Informações Básicas</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <Label htmlFor="title">Título *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Ex: Netflix, Aluguel, Academia..."
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="description">Descrição</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Descrição adicional (opcional)"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="amount">Valor *</Label>
+                  <CurrencyInput
+                    id="amount"
+                    value={formData.amount}
                                         onValueChange={(value: number | null) => setFormData({ ...formData, amount: value || 0 })}
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="category">Categoria *</Label>
-                                    <Select
-                                        value={formData.categoryId}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="category">Categoria *</Label>
+                  <Select
+                    value={formData.categoryId}
                                         onValueChange={(value: string) => setFormData({ ...formData, categoryId: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione uma categoria" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {categories.map((category) => (
-                                                <SelectItem key={category.id} value={category.id}>
-                                                    <div className="flex items-center space-x-2">
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center space-x-2">
                                                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
-                                                        <span>{category.name}</span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            <span>{category.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
                     {/* Detalhes do Pagamento e Recorrência */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center space-x-2">
-                                <CreditCard className="h-5 w-5" />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <CreditCard className="h-5 w-5" />
                                 <span>Pagamento e Recorrência</span>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <Label htmlFor="paymentMethod">Forma de Pagamento *</Label>
-                                    <Select
-                                        value={formData.paymentMethod}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="paymentMethod">Forma de Pagamento *</Label>
+                  <Select
+                    value={formData.paymentMethod}
                                         onValueChange={(value: string) => setFormData({ ...formData, paymentMethod: value, creditCardId: "" })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione a forma de pagamento" />
-                                        </SelectTrigger>
-                                        <SelectContent>
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a forma de pagamento" />
+                    </SelectTrigger>
+                    <SelectContent>
                                             <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
                                             <SelectItem value="debit_card">Cartão de Débito</SelectItem>
                                             <SelectItem value="bank_slip">Boleto Bancário</SelectItem>
@@ -241,11 +241,11 @@ export default function NewTransactionPage() {
                                                 {creditCards.map((card) => (
                                                     <SelectItem key={card.id} value={card.id}>
                                                         {card.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                                 )}
                                 <div>
                                     <Label htmlFor="recurrenceType">Tipo de Recorrência *</Label>
@@ -300,7 +300,7 @@ export default function NewTransactionPage() {
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                <div>
+                  <div>
                                     <Label htmlFor="endDate">Data de Término (Opcional)</Label>
                                     <Popover>
                                         <PopoverTrigger asChild>

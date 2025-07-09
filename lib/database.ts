@@ -379,7 +379,7 @@ export const getTransactionsWithDetails = cache(async (): Promise<RecurringTrans
 })
 
 export const getUpcomingTransactions = cache(async (days = 7): Promise<TransactionInstanceWithDetails[]> => {
-  const today = new Date()
+      const today = new Date()
   const upcomingDate = new Date()
   upcomingDate.setDate(today.getDate() + days)
 
