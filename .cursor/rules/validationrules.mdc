@@ -1,0 +1,12 @@
+---
+description: Generate input validation schemas using Zod.
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+When asked to validate input data:
+- Use the Zod library for schema definition.
+- Validate required fields, types, and constraints.
+- Provide custom error messages when needed.
+- Export the schema separately for reuse across routes or components.
+- Validate both client-side and server-side where possible.

@@ -1,0 +1,13 @@
+---
+description: Generate React components for displaying or managing financial data.
+globs: ["**/*.tsx"]
+alwaysApply: false
+---
+
+When asked to create a React component:
+- Use functional components with TypeScript.
+- Fetch data using Supabase Client or SWR.
+- Follow a clean and modular folder structure.
+- Use TailwindCSS for styling if applicable.
+- Ensure components are reusable and composable.
+- Include loading and error states.

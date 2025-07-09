@@ -1,0 +1,13 @@
+---
+description: Generate a PostgreSQL SQL script to create a new Supabase table.
+globs: ["*.sql"]
+alwaysApply: false
+---
+
+When requested to create a new table for Supabase, generate a SQL script with:
+- Table name in snake_case.
+- Primary key as `id UUID` with `uuid_generate_v4()` default.
+- Appropriate PostgreSQL data types for each field.
+- `created_at` and `updated_at` timestamp fields.
+- Foreign keys if needed, with constraints.
+- Indexes where performance is important.

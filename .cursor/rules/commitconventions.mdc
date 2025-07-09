@@ -1,0 +1,13 @@
+---
+description: Generate Git commit messages using the Conventional Commits standard.
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+When asked to generate a Git commit message, follow the Conventional Commits format:
+- `feat:` for new features
+- `fix:` for bug fixes
+- `refactor:` for code changes that don’t fix bugs or add features
+- `docs:` for documentation changes
+- `chore:` for maintenance tasks
+- Start the message in lowercase and keep it short and clear.

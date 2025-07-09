@@ -1,0 +1,13 @@
+---
+description: Create a REST API endpoint using Vercel Edge Functions integrated with Supabase.
+globs: ["api/**/*.ts", "pages/api/**/*.ts"]
+alwaysApply: false
+---
+
+When requested to create an API endpoint:
+- Use TypeScript.
+- Validate input using Zod.
+- Integrate with Supabase using `@supabase/supabase-js`.
+- Use proper HTTP methods: `GET`, `POST`, `PUT`, `DELETE`.
+- Return meaningful HTTP status codes.
+- Handle errors gracefully and log details when necessary.
