@@ -19,7 +19,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { getCategories, getCreditCards, createRecurringTransaction } from "@/lib/database";
-import type { Category, CreditCard } from "@/lib/database";
+import type { Category, CreditCard as CreditCardType } from "@/lib/database";
 
 export default function NewTransactionPage() {
     const [formData, setFormData] = useState({
@@ -36,7 +36,7 @@ export default function NewTransactionPage() {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
+    const [creditCards, setCreditCards] = useState<CreditCardType[]>([]);
     const { toast } = useToast();
     const router = useRouter();
 
@@ -171,14 +171,14 @@ export default function NewTransactionPage() {
                                     <CurrencyInput
                                         id="amount"
                                         value={formData.amount}
-                                        onValueChange={(value) => setFormData({ ...formData, amount: value || 0 })}
+                                        onValueChange={(value: number | null) => setFormData({ ...formData, amount: value || 0 })}
                                     />
                                 </div>
                                 <div>
                                     <Label htmlFor="category">Categoria *</Label>
                                     <Select
                                         value={formData.categoryId}
-                                        onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+                                        onValueChange={(value: string) => setFormData({ ...formData, categoryId: value })}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Selecione uma categoria" />
@@ -213,7 +213,7 @@ export default function NewTransactionPage() {
                                     <Label htmlFor="paymentMethod">Forma de Pagamento *</Label>
                                     <Select
                                         value={formData.paymentMethod}
-                                        onValueChange={(value) => setFormData({ ...formData, paymentMethod: value, creditCardId: "" })}
+                                        onValueChange={(value: string) => setFormData({ ...formData, paymentMethod: value, creditCardId: "" })}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Selecione a forma de pagamento" />
@@ -232,7 +232,7 @@ export default function NewTransactionPage() {
                                         <Label htmlFor="creditCardId">Cartão de Crédito *</Label>
                                         <Select
                                             value={formData.creditCardId}
-                                            onValueChange={(value) => setFormData({ ...formData, creditCardId: value })}
+                                            onValueChange={(value: string) => setFormData({ ...formData, creditCardId: value })}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Selecione um cartão" />
@@ -251,7 +251,7 @@ export default function NewTransactionPage() {
                                     <Label htmlFor="recurrenceType">Tipo de Recorrência *</Label>
                                     <Select
                                         value={formData.recurrenceType}
-                                        onValueChange={(value) => setFormData({ ...formData, recurrenceType: value })}
+                                        onValueChange={(value: string) => setFormData({ ...formData, recurrenceType: value })}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Selecione a recorrência" />
@@ -266,7 +266,7 @@ export default function NewTransactionPage() {
                                     <Label htmlFor="dueDay">Dia de Vencimento *</Label>
                                     <Select
                                         value={formData.dueDay}
-                                        onValueChange={(value) => setFormData({ ...formData, dueDay: value })}
+                                        onValueChange={(value: string) => setFormData({ ...formData, dueDay: value })}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Selecione o dia" />
@@ -294,7 +294,7 @@ export default function NewTransactionPage() {
                                             <Calendar
                                                 mode="single"
                                                 selected={formData.startDate}
-                                                onSelect={(date) => setFormData({ ...formData, startDate: date })}
+                                                onSelect={(date: Date | undefined) => setFormData({ ...formData, startDate: date })}
                                                 initialFocus
                                             />
                                         </PopoverContent>
@@ -316,7 +316,7 @@ export default function NewTransactionPage() {
                                             <Calendar
                                                 mode="single"
                                                 selected={formData.endDate}
-                                                onSelect={(date) => setFormData({ ...formData, endDate: date })}
+                                                onSelect={(date: Date | undefined) => setFormData({ ...formData, endDate: date })}
                                             />
                                         </PopoverContent>
                                     </Popover>
