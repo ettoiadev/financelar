@@ -24,12 +24,16 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
-          <Navigation />
-          {children}
+          <div className="min-h-screen bg-gray-50">
+            <Navigation />
+            <main className="flex-1">
+              {children}
+            </main>
+          </div>
           <Toaster />
         </ThemeProvider>
       </body>

@@ -84,62 +84,62 @@ function DashboardMetrics() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {/* Total Mensal */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-        <CardContent className="p-6">
+      <Card className="bg-blue-500 border-0 text-white hover:bg-blue-600 transition-colors duration-300">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Mensal</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary?.total_amount || 0)}</p>
+              <p className="text-sm text-blue-100 mb-1">Total Mensal</p>
+              <p className="text-xl font-bold">{formatCurrency(summary?.total_amount || 0)}</p>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <TrendingUp className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5" />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Cartões Ativos */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-        <CardContent className="p-6">
+      <Card className="bg-teal-500 border-0 text-white hover:bg-teal-600 transition-colors duration-300">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Cartões Ativos</p>
-              <p className="text-2xl font-bold text-gray-900">{activeCreditCards}</p>
+              <p className="text-sm text-teal-100 mb-1">Cartões Ativos</p>
+              <p className="text-xl font-bold">{activeCreditCards}</p>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <CreditCard className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <CreditCard className="w-5 h-5" />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Contas Pagas */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-        <CardContent className="p-6">
+      <Card className="bg-green-500 border-0 text-white hover:bg-green-600 transition-colors duration-300">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Contas Pagas</p>
-              <p className="text-2xl font-bold text-gray-900">{summary?.paid_count || 0}</p>
+              <p className="text-sm text-green-100 mb-1">Contas Pagas</p>
+              <p className="text-xl font-bold">{summary?.paid_count || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <CheckCircle className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-5 h-5" />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Em Atraso */}
-      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
-        <CardContent className="p-6">
+      <Card className="bg-red-500 border-0 text-white hover:bg-red-600 transition-colors duration-300">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Em Atraso</p>
-              <p className="text-2xl font-bold text-gray-900">{summary?.overdue_count || 0}</p>
+              <p className="text-sm text-red-100 mb-1">Em Atraso</p>
+              <p className="text-xl font-bold">{summary?.overdue_count || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <AlertCircle className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <AlertCircle className="w-5 h-5" />
             </div>
           </div>
         </CardContent>
@@ -266,75 +266,41 @@ function UpcomingDues() {
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>
           <p className="text-gray-600">Visão geral das suas finanças</p>
         </div>
 
         {/* Metrics Cards */}
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i} className="border-0 shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="animate-pulse">
-                      <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                      <div className="h-8 bg-gray-200 rounded w-32"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          }
-        >
-          <DashboardMetrics />
-        </Suspense>
-
-        {/* Second Row: Upcoming Dues and Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <Suspense
-            fallback={
-              <Card className="border-0 shadow-lg">
-                <CardHeader>
-                  <div className="animate-pulse h-6 bg-gray-200 rounded w-48"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="animate-pulse space-y-4">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            }
-          >
-            <UpcomingDues />
+        <div className="mb-8">
+          <Suspense fallback={<div>Carregando métricas...</div>}>
+            <DashboardMetrics />
           </Suspense>
-
-          <QuickActions />
         </div>
 
-        {/* Category Summary */}
-        <Suspense
-          fallback={
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <div className="animate-pulse h-6 bg-gray-200 rounded w-48"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="animate-pulse">
-                  <div className="h-64 bg-gray-200 rounded"></div>
-                </div>
-              </CardContent>
-            </Card>
-          }
-        >
-          <CategoryPieChart />
-        </Suspense>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Próximos Vencimentos */}
+            <Suspense fallback={<div>Carregando próximos vencimentos...</div>}>
+              <UpcomingDues />
+            </Suspense>
+            
+            {/* Ações Rápidas */}
+            <QuickActions />
+          </div>
+          
+          {/* Right Column - Gráfico de Categorias */}
+          <div>
+            <Suspense fallback={<div>Carregando gráfico...</div>}>
+              <CategoryPieChart />
+            </Suspense>
+          </div>
+        </div>
       </div>
     </div>
   )
