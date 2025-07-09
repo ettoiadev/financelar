@@ -18,32 +18,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-
-// Mock data - replace with actual data fetching
-const categories = [
-    { id: "1", name: "Moradia", color: "#EF4444" },
-    { id: "2", name: "Alimentação", color: "#F59E0B" },
-    { id: "3", name: "Transporte", color: "#10B981" },
-    { id: "4", name: "Saúde", color: "#06B6D4" },
-    { id: "5", name: "Educação", color: "#8B5CF6" },
-    { id: "6", name: "Lazer", color: "#EC4899" },
-    { id: "7", name: "Serviços Digitais", color: "#8B5CF6" },
-    { id: "8", name: "Seguros", color: "#84CC16" }
-];
-
-const creditCards = [
-    { id: "1", name: "Cartão Principal", bank: "Banco do Brasil" },
-    { id: "2", name: "Cartão Secundário", bank: "Itaú" },
-    { id: "3", name: "Cartão Premium", bank: "Nubank" }
-];
-
-const paymentMethods = [
-    { value: "credit_card", label: "Cartão de Crédito" },
-    { value: "debit_card", label: "Cartão de Débito" },
-    { value: "bank_slip", label: "Boleto Bancário" },
-    { value: "automatic_debit", label: "Débito Automático" },
-    { value: "pix", label: "PIX" }
-];
+import { getCategories, getCreditCards, createRecurringTransaction } from "@/lib/database";
+import type { Category, CreditCard } from "@/lib/database";
 
 export default function NewTransactionPage() {
     const [formData, setFormData] = useState({
@@ -59,8 +35,22 @@ export default function NewTransactionPage() {
         endDate: undefined as Date | undefined
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
     const { toast } = useToast();
     const router = useRouter();
+
+    useState(() => {
+        const fetchData = async () => {
+            const [categoriesData, creditCardsData] = await Promise.all([
+                getCategories(),
+                getCreditCards()
+            ]);
+            setCategories(categoriesData);
+            setCreditCards(creditCardsData);
+        };
+        fetchData();
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -88,17 +78,33 @@ export default function NewTransactionPage() {
                 return;
             }
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            toast({
-                title: "Transação criada com sucesso!",
-                description: `A transação "${formData.title}" foi adicionada.`,
+            const newTransaction = await createRecurringTransaction({
+                title: formData.title,
+                description: formData.description,
+                amount: formData.amount,
+                category_id: formData.categoryId,
+                payment_method: formData.paymentMethod as any,
+                credit_card_id: formData.creditCardId || undefined,
+                recurrence_type: formData.recurrenceType as any,
+                due_day: parseInt(formData.dueDay),
+                start_date: formData.startDate.toISOString(),
+                end_date: formData.endDate?.toISOString(),
+                is_active: true,
+                reminder_days: 3,
             });
 
-            setTimeout(() => {
-                router.push("/transactions");
-            }, 1000);
+            if (newTransaction) {
+                 toast({
+                    title: "Transação criada com sucesso!",
+                    description: `A transação "${formData.title}" foi adicionada.`,
+                });
+
+                setTimeout(() => {
+                    router.push("/transactions");
+                }, 1000);
+            } else {
+                 throw new Error("Failed to create transaction");
+            }
 
         } catch (error) {
             toast({
@@ -213,11 +219,11 @@ export default function NewTransactionPage() {
                                             <SelectValue placeholder="Selecione a forma de pagamento" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {paymentMethods.map((method) => (
-                                                <SelectItem key={method.value} value={method.value}>
-                                                    {method.label}
-                                                </SelectItem>
-                                            ))}
+                                            <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
+                                            <SelectItem value="debit_card">Cartão de Débito</SelectItem>
+                                            <SelectItem value="bank_slip">Boleto Bancário</SelectItem>
+                                            <SelectItem value="automatic_debit">Débito Automático</SelectItem>
+                                            <SelectItem value="pix">PIX</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
