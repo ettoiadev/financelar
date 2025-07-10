@@ -1,11 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, Receipt, CreditCard, Calendar as CalendarIcon } from "lucide-react"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,14 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CurrencyInput } from "@/components/ui/currency-input"
-import { useToast } from "@/components/ui/use-toast"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { getCategories, getCreditCards, createRecurringTransaction } from "@/lib/database";
-import type { Category, CreditCard as CreditCardType } from "@/lib/database";
-import { createClient } from '@/lib/supabase/client'
+import { useToast } from "@/hooks/use-toast"
+import { ArrowLeft, Receipt, CreditCard } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function NewTransactionPage() {
   const [formData, setFormData] = useState({
@@ -34,166 +27,142 @@ export default function NewTransactionPage() {
     dueDay: "",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [creditCards, setCreditCards] = useState<CreditCardType[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const { toast } = useToast();
-    const router = useRouter();
-    const supabase = createClient();
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
+  const router = useRouter()
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                
-                // Check if user is authenticated
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session?.user?.id) {
-                    setError('Usuário não autenticado');
-                    return;
-                }
+  // Mock data
+  const categories = [
+    { id: "1", name: "Moradia", color: "#EF4444" },
+    { id: "2", name: "Alimentação", color: "#F59E0B" },
+    { id: "3", name: "Transporte", color: "#10B981" },
+    { id: "4", name: "Saúde", color: "#06B6D4" },
+    { id: "5", name: "Educação", color: "#8B5CF6" },
+    { id: "6", name: "Lazer", color: "#EC4899" },
+    { id: "7", name: "Serviços Digitais", color: "#8B5CF6" },
+    { id: "8", name: "Seguros", color: "#84CC16" }
+  ]
 
-                const [categoriesData, creditCardsData] = await Promise.all([
-                    getCategories(),
-                    getCreditCards()
-                ]);
-                setCategories(categoriesData || []);
-                setCreditCards(creditCardsData || []);
-            } catch (err) {
-                console.error('Error loading data:', err);
-                setError('Erro ao carregar dados');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+  const creditCards = [
+    { id: "1", name: "Cartão Principal", bank: "Banco do Brasil" },
+    { id: "2", name: "Cartão Secundário", bank: "Itaú" },
+    { id: "3", name: "Cartão Premium", bank: "Nubank" }
+  ]
+
+  const paymentMethods = [
+    { value: "credit_card", label: "Cartão de Crédito" },
+    { value: "debit_card", label: "Cartão de Débito" },
+    { value: "bank_slip", label: "Boleto Bancário" },
+    { value: "automatic_debit", label: "Débito Automático" },
+    { value: "pix", label: "PIX" }
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     try {
-            // Validations
-            if (!formData.title.trim() || formData.amount <= 0 || !formData.categoryId || !formData.paymentMethod || !formData.dueDay || !formData.startDate) {
+      // Validações
+      if (!formData.title.trim()) {
         toast({
-                    title: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos obrigatórios.",
+          title: "Título obrigatório",
+          description: "Por favor, informe o título da transação.",
           variant: "destructive",
-                });
-                setIsSubmitting(false);
-                return;
+        })
+        setIsSubmitting(false)
+        return
+      }
+
+      if (formData.amount <= 0) {
+        toast({
+          title: "Valor inválido",
+          description: "Por favor, informe um valor válido.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
+      }
+
+      if (!formData.categoryId) {
+        toast({
+          title: "Categoria obrigatória",
+          description: "Por favor, selecione uma categoria.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
+      }
+
+      if (!formData.paymentMethod) {
+        toast({
+          title: "Forma de pagamento obrigatória",
+          description: "Por favor, selecione a forma de pagamento.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
       }
 
       if (formData.paymentMethod === "credit_card" && !formData.creditCardId) {
         toast({
-                    title: "Cartão de crédito obrigatório",
+          title: "Cartão obrigatório",
           description: "Por favor, selecione um cartão de crédito.",
           variant: "destructive",
-                });
-                setIsSubmitting(false);
-                return;
+        })
+        setIsSubmitting(false)
+        return
       }
 
-            const newTransaction = await createRecurringTransaction({
-                title: formData.title,
-                description: formData.description,
-                amount: formData.amount,
-                category_id: formData.categoryId,
-                payment_method: formData.paymentMethod as any,
-                credit_card_id: formData.creditCardId || undefined,
-                recurrence_type: formData.recurrenceType as any,
-                due_day: parseInt(formData.dueDay),
-                start_date: formData.startDate.toISOString(),
-                end_date: formData.endDate?.toISOString(),
-                is_active: true,
-                reminder_days: 3,
-            });
+      if (!formData.dueDay) {
+        toast({
+          title: "Dia de vencimento obrigatório",
+          description: "Por favor, informe o dia de vencimento.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
+      }
 
-            if (newTransaction) {
+      if (!formData.startDate) {
+        toast({
+          title: "Data de início obrigatória",
+          description: "Por favor, selecione a data de início.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
+      }
+
+      // Simular API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
       toast({
         title: "Transação criada com sucesso!",
-                    description: `A transação "${formData.title}" foi adicionada.`,
-                });
+        description: `A transação "${formData.title}" foi adicionada às suas contas recorrentes.`,
+      })
       
+      // Redirecionar para a página de transações
       setTimeout(() => {
-                    router.push("/transactions");
-                }, 1000);
-            } else {
-                 throw new Error("Failed to create transaction");
-            }
+        router.push("/transactions")
+      }, 1000)
       
     } catch (error) {
       toast({
         title: "Erro ao criar transação",
         description: "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive",
-            });
+      })
     } finally {
-            setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-    };
+  }
 
-    const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
+  // Gerar opções de dias (1-31)
+  const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1)
 
-    if (loading) {
-        return (
-            <div className="container mx-auto px-6 py-8">
-                <div className="flex items-center space-x-4 mb-8">
-                    <Link href="/transactions">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Voltar
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Nova Transação Recorrente</h1>
-                        <p className="text-gray-600">Carregando dados...</p>
-                    </div>
-                </div>
-                <div className="max-w-4xl">
-                    <Card>
-                        <CardContent className="p-6 text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-3"></div>
-                            <p className="text-gray-500 text-sm">Carregando categorias e cartões...</p>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="container mx-auto px-6 py-8">
-                <div className="flex items-center space-x-4 mb-8">
-                    <Link href="/transactions">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Voltar
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Nova Transação Recorrente</h1>
-                        <p className="text-gray-600">Erro ao carregar dados</p>
-                    </div>
-                </div>
-                <div className="max-w-4xl">
-                    <Card>
-                        <CardContent className="p-6 text-center">
-                            <Receipt className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500 text-sm">{error}</p>
-                            <p className="text-xs text-gray-400 mt-1">Tente fazer login novamente</p>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        );
-    }
+  const selectedCategory = categories.find(cat => cat.id === formData.categoryId)
+  const selectedCreditCard = creditCards.find(card => card.id === formData.creditCardId)
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -232,6 +201,7 @@ export default function NewTransactionPage() {
                     required
                   />
                 </div>
+
                 <div className="md:col-span-2">
                   <Label htmlFor="description">Descrição</Label>
                   <Textarea
@@ -242,19 +212,21 @@ export default function NewTransactionPage() {
                     rows={3}
                   />
                 </div>
+
                 <div>
                   <Label htmlFor="amount">Valor *</Label>
                   <CurrencyInput
                     id="amount"
                     value={formData.amount}
-                                        onValueChange={(value: number | null) => setFormData({ ...formData, amount: value || 0 })}
+                    onChange={(value) => setFormData({ ...formData, amount: value })}
                   />
                 </div>
+
                 <div>
                   <Label htmlFor="category">Categoria *</Label>
                   <Select
                     value={formData.categoryId}
-                                        onValueChange={(value: string) => setFormData({ ...formData, categoryId: value })}
+                    onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma categoria" />
@@ -263,7 +235,10 @@ export default function NewTransactionPage() {
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           <div className="flex items-center space-x-2">
-                                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
                             <span>{category.name}</span>
                           </div>
                         </SelectItem>
@@ -275,12 +250,12 @@ export default function NewTransactionPage() {
             </CardContent>
           </Card>
 
-                    {/* Detalhes do Pagamento e Recorrência */}
+          {/* Forma de pagamento */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <CreditCard className="h-5 w-5" />
-                                <span>Pagamento e Recorrência</span>
+                <span>Forma de Pagamento</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -289,128 +264,21 @@ export default function NewTransactionPage() {
                   <Label htmlFor="paymentMethod">Forma de Pagamento *</Label>
                   <Select
                     value={formData.paymentMethod}
-                                        onValueChange={(value: string) => setFormData({ ...formData, paymentMethod: value, creditCardId: "" })}
+                    onValueChange={(value) => setFormData({ ...formData, paymentMethod: value, creditCardId: "" })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione a forma de pagamento" />
                     </SelectTrigger>
                     <SelectContent>
-                                            <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                                            <SelectItem value="debit_card">Cartão de Débito</SelectItem>
-                                            <SelectItem value="bank_slip">Boleto Bancário</SelectItem>
-                                            <SelectItem value="automatic_debit">Débito Automático</SelectItem>
-                                            <SelectItem value="pix">PIX</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                {formData.paymentMethod === 'credit_card' && (
-                                    <div>
-                                        <Label htmlFor="creditCardId">Cartão de Crédito *</Label>
-                                        <Select
-                                            value={formData.creditCardId}
-                                            onValueChange={(value: string) => setFormData({ ...formData, creditCardId: value })}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione um cartão" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {creditCards.map((card) => (
-                                                    <SelectItem key={card.id} value={card.id}>
-                                                        {card.name}
+                      {paymentMethods.map((method) => (
+                        <SelectItem key={method.value} value={method.value}>
+                          {method.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                                )}
-                                <div>
-                                    <Label htmlFor="recurrenceType">Tipo de Recorrência *</Label>
-                                    <Select
-                                        value={formData.recurrenceType}
-                                        onValueChange={(value: string) => setFormData({ ...formData, recurrenceType: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione a recorrência" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="monthly">Mensal</SelectItem>
-                                            <SelectItem value="yearly">Anual</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label htmlFor="dueDay">Dia de Vencimento *</Label>
-                                    <Select
-                                        value={formData.dueDay}
-                                        onValueChange={(value: string) => setFormData({ ...formData, dueDay: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione o dia" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {dayOptions.map((day) => (
-                                                <SelectItem key={day} value={String(day)}>{day}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label htmlFor="startDate">Data de Início *</Label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant={"outline"}
-                                                className={cn("w-full justify-start text-left font-normal", !formData.startDate && "text-muted-foreground")}
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {formData.startDate ? format(formData.startDate, "PPP") : <span>Escolha uma data</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={formData.startDate}
-                                                onSelect={(date: Date | undefined) => setFormData({ ...formData, startDate: date })}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                  <div>
-                                    <Label htmlFor="endDate">Data de Término (Opcional)</Label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant={"outline"}
-                                                className={cn("w-full justify-start text-left font-normal", !formData.endDate && "text-muted-foreground")}
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {formData.endDate ? format(formData.endDate, "PPP") : <span>Escolha uma data</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={formData.endDate}
-                                                onSelect={(date: Date | undefined) => setFormData({ ...formData, endDate: date })}
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
 
-                    <div className="flex justify-end space-x-4">
-                        <Link href="/transactions">
-                            <Button type="button" variant="outline">Cancelar</Button>
-                        </Link>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? "Salvando..." : "Salvar Transação"}
-                        </Button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-}
+                {formData.paymentMethod === "credit_card" && (
+                  <div>
+                    \

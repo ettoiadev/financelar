@@ -73,7 +73,7 @@ export function CategoryPieChart() {
 
   if (loading) {
     return (
-      <Card className="border-0 shadow-lg">
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
             <BarChart3 className="w-5 h-5 text-blue-600" />
@@ -82,7 +82,7 @@ export function CategoryPieChart() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-500">Carregando dados...</p>
           </div>
         </CardContent>
@@ -92,7 +92,7 @@ export function CategoryPieChart() {
 
   if (error) {
     return (
-      <Card className="border-0 shadow-lg">
+      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
             <BarChart3 className="w-5 h-5 text-blue-600" />
@@ -101,9 +101,8 @@ export function CategoryPieChart() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-12">
-            <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">{error}</p>
-            <p className="text-sm text-gray-400 mt-1">Tente fazer login novamente</p>
+            <BarChart3 className="w-16 h-16 text-red-300 mx-auto mb-4" />
+            <p className="text-red-500">{error}</p>
           </div>
         </CardContent>
       </Card>
@@ -141,7 +140,7 @@ export function CategoryPieChart() {
                     dataKey="value"
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color || '#e2e8f0'} />
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
@@ -159,7 +158,7 @@ export function CategoryPieChart() {
 
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {categorySummary.map((category) => {
-                    const percentage = totalAmount > 0 ? ((category.total_amount || 0) / totalAmount) * 100 : 0
+                    const percentage = totalAmount > 0 ? (category.total_amount / totalAmount) * 100 : 0
                     return (
                       <div
                         key={category.category_id}
@@ -168,15 +167,15 @@ export function CategoryPieChart() {
                         <div className="flex items-center gap-3">
                           <div
                             className="w-4 h-4 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: category.category_color || '#e2e8f0' }}
+                            style={{ backgroundColor: category.category_color }}
                           />
                           <div className="min-w-0">
                             <p className="font-medium text-gray-900 text-sm truncate">{category.category_name}</p>
-                            <p className="text-xs text-gray-500">{category.transaction_count || 0} transações</p>
+                            <p className="text-xs text-gray-500">{category.transaction_count} transações</p>
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="font-semibold text-gray-900 text-sm">{formatCurrency(category.total_amount || 0)}</p>
+                          <p className="font-semibold text-gray-900 text-sm">{formatCurrency(category.total_amount)}</p>
                           <p className="text-xs text-gray-500">{percentage.toFixed(1)}%</p>
                         </div>
                       </div>

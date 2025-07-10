@@ -1,149 +1,17 @@
-'use client'
-
-import { Suspense } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { CategoryPieChart } from "@/components/category-pie-chart"
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Download, Filter } from "lucide-react"
-import { getMonthlySummary, getTransactionInstances } from "@/lib/database"
-import { formatCurrency } from "@/lib/utils/currency"
 
-async function ReportsMetrics() {
-  try {
-    const currentDate = new Date()
-    const currentYear = currentDate.getFullYear()
-    const currentMonth = currentDate.getMonth() + 1
-
-    const [summary, transactions] = await Promise.all([
-      getMonthlySummary(currentYear, currentMonth) || { total_amount: 0, paid_count: 0, overdue_count: 0 },
-      getTransactionInstances(currentYear, currentMonth) || []
-    ])
-
-    const totalAmount = summary?.total_amount || 0
-    const transactionCount = transactions.length
-    const averageAmount = transactionCount > 0 ? totalAmount / transactionCount : 0
-
-    // Encontrar o maior gasto
-    const maxTransaction = transactions.reduce((max, current) => {
-      return (current.amount > (max?.amount || 0)) ? current : max
-    }, transactions[0])
-
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Total Gasto</p>
-                <p className="text-2xl font-bold text-gray-900 mb-2">{formatCurrency(totalAmount)}</p>
-                <div className="flex items-center text-sm">
-                  <TrendingUp className="h-4 w-4 text-red-500 mr-1" />
-                  <span className="text-gray-500">Este mês</span>
-                </div>
-              </div>
-              <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Média por Transação</p>
-                <p className="text-2xl font-bold text-gray-900 mb-2">{formatCurrency(averageAmount)}</p>
-                <div className="flex items-center text-sm">
-                  <Calendar className="h-4 w-4 text-blue-500 mr-1" />
-                  <span className="text-gray-500">Este mês</span>
-                </div>
-              </div>
-              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Maior Gasto</p>
-                <p className="text-2xl font-bold text-gray-900 mb-2">{formatCurrency(maxTransaction?.amount || 0)}</p>
-                <p className="text-sm text-gray-600">{maxTransaction?.category_name || 'N/A'}</p>
-              </div>
-              <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">Transações</p>
-                <p className="text-2xl font-bold text-gray-900 mb-2">{transactionCount}</p>
-                <p className="text-sm text-gray-600">Este mês</p>
-              </div>
-              <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  } catch (error) {
-    console.error('Error in ReportsMetrics:', error)
-    return null
+export default function ReportsPage() {
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value)
   }
-}
 
-async function RecentTransactions() {
-  try {
-    const currentDate = new Date()
-    const currentYear = currentDate.getFullYear()
-    const currentMonth = currentDate.getMonth() + 1
-
-    const transactions = await getTransactionInstances(currentYear, currentMonth) || []
-
-    return (
-      <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-gray-900">Transações Recentes</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-4">
-            {transactions.slice(0, 5).map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                <div className="flex items-center space-x-4">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: transaction.category_color }} />
-                  <div>
-                    <p className="font-semibold text-gray-900">{transaction.title}</p>
-                    <p className="text-sm text-gray-600">
-                      {new Date(transaction.due_date).toLocaleDateString("pt-BR")} • {transaction.category_name}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-lg font-bold text-gray-900">{formatCurrency(transaction.amount)}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  } catch (error) {
-    console.error('Error in RecentTransactions:', error)
-    return null
-  }
-}
-
-function ReportsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header Section */}
@@ -216,75 +84,249 @@ function ReportsPage() {
         </Card>
 
         {/* Metrics Cards */}
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i} className="border-0 shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="animate-pulse">
-                      <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                      <div className="h-8 bg-gray-200 rounded w-32"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          }
-        >
-          <ReportsMetrics />
-        </Suspense>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Gasto</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">{formatCurrency(2847.6)}</p>
+                  <div className="flex items-center text-sm">
+                    <TrendingUp className="h-4 w-4 text-red-500 mr-1" />
+                    <span className="text-red-600 font-medium">+12%</span>
+                    <span className="text-gray-500 ml-1">vs mês anterior</span>
+                  </div>
+                </div>
+                <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-red-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Média Mensal</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">{formatCurrency(2654.3)}</p>
+                  <div className="flex items-center text-sm">
+                    <TrendingDown className="h-4 w-4 text-green-500 mr-1" />
+                    <span className="text-green-600 font-medium">-5%</span>
+                    <span className="text-gray-500 ml-1">vs média anual</span>
+                  </div>
+                </div>
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                  <Calendar className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Maior Gasto</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">{formatCurrency(1200.0)}</p>
+                  <p className="text-sm text-gray-600">Moradia</p>
+                </div>
+                <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Transações</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">24</p>
+                  <p className="text-sm text-gray-600">Este mês</p>
+                </div>
+                <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                  <Calendar className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Pie Chart Section */}
-          <Suspense
-            fallback={
-              <Card className="border-0 shadow-lg">
-                <CardHeader>
-                  <div className="animate-pulse h-6 bg-gray-200 rounded w-48"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="animate-pulse">
-                    <div className="h-64 bg-gray-200 rounded"></div>
+          <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-gray-900">Gastos por Categoria</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex flex-col items-center">
+                <div className="w-full max-w-sm mb-6">
+                  <CategoryPieChart />
+                </div>
+                <div className="w-full space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="text-gray-700 font-medium">Moradia</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{formatCurrency(1200.0)}</span>
                   </div>
-                </CardContent>
-              </Card>
-            }
-          >
-            <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-900">Gastos por Categoria</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <CategoryPieChart />
-              </CardContent>
-            </Card>
-          </Suspense>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-gray-700 font-medium">Transporte</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{formatCurrency(512.4)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-gray-700 font-medium">Alimentação</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{formatCurrency(427.14)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                      <span className="text-gray-700 font-medium">Serviços Digitais</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{formatCurrency(341.71)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
+                      <span className="text-gray-700 font-medium">Saúde</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{formatCurrency(227.81)}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Recent Transactions */}
-          <Suspense
-            fallback={
-              <Card className="border-0 shadow-lg">
-                <CardHeader>
-                  <div className="animate-pulse h-6 bg-gray-200 rounded w-48"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="animate-pulse space-y-4">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                    ))}
+          {/* Top Expenses */}
+          <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-gray-900">Maiores Gastos</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-8 bg-red-500 rounded-full"></div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Moradia</p>
+                      <p className="text-sm text-gray-600">42% do total</p>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            }
-          >
-            <RecentTransactions />
-          </Suspense>
+                  <span className="text-lg font-bold text-gray-900">{formatCurrency(1200.0)}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Transporte</p>
+                      <p className="text-sm text-gray-600">18% do total</p>
+                    </div>
+                  </div>
+                  <span className="text-lg font-bold text-gray-900">{formatCurrency(512.4)}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-8 bg-green-500 rounded-full"></div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Alimentação</p>
+                      <p className="text-sm text-gray-600">15% do total</p>
+                    </div>
+                  </div>
+                  <span className="text-lg font-bold text-gray-900">{formatCurrency(427.14)}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-8 bg-purple-500 rounded-full"></div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Serviços Digitais</p>
+                      <p className="text-sm text-gray-600">12% do total</p>
+                    </div>
+                  </div>
+                  <span className="text-lg font-bold text-gray-900">{formatCurrency(341.71)}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-8 bg-cyan-500 rounded-full"></div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Saúde</p>
+                      <p className="text-sm text-gray-600">8% do total</p>
+                    </div>
+                  </div>
+                  <span className="text-lg font-bold text-gray-900">{formatCurrency(227.81)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Recent Transactions */}
+        <Card className="bg-white shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">Transações Recentes</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div className="flex items-center space-x-4">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Netflix</p>
+                    <p className="text-sm text-gray-600">05/12/2024 • Serviços Digitais</p>
+                  </div>
+                </div>
+                <span className="text-lg font-bold text-gray-900">{formatCurrency(29.9)}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div className="flex items-center space-x-4">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Aluguel</p>
+                    <p className="text-sm text-gray-600">10/12/2024 • Moradia</p>
+                  </div>
+                </div>
+                <span className="text-lg font-bold text-gray-900">{formatCurrency(1200.0)}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div className="flex items-center space-x-4">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Spotify</p>
+                    <p className="text-sm text-gray-600">12/12/2024 • Serviços Digitais</p>
+                  </div>
+                </div>
+                <span className="text-lg font-bold text-gray-900">{formatCurrency(19.9)}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div className="flex items-center space-x-4">
+                  <div className="w-3 h-3 bg-cyan-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Academia</p>
+                    <p className="text-sm text-gray-600">15/12/2024 • Saúde</p>
+                  </div>
+                </div>
+                <span className="text-lg font-bold text-gray-900">{formatCurrency(89.9)}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
 }
-
-export default ReportsPage
